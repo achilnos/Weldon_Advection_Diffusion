@@ -23,19 +23,16 @@ def time_loop(initsize, h, hh, timemax, a, sigma):
         if t + dt > timemax:
             dt = timemax - t
             if dt == 0:
-                break#this could be the place to call the data comparison function
+                break
         space_loop(initsize, h, hh, sigma, dt)
         print "innerloop dt = ", dt
-        t = t + dt#the problem is dt = 0 here
-        #print "t = ", t
-    #print "t =", t
-        #actual upwind calculation next line
+        t = t + dt
 
 def space_loop(initsize, h, hh, sigma, dt):
     print "space loop initsize = " + str(initsize)
     grid = np.zeros(initsize)#having this vector be bigger than m allow convient boundary condition calculations
     i = 0
-    while(i < initsize):#this loop exits correctly!
+    while(i < initsize):
         x = i * h - hh
         f = lambda x: math.cos(2*math.pi*x)
         grid[i] = f(x)
@@ -44,8 +41,17 @@ def space_loop(initsize, h, hh, sigma, dt):
     GRIDS.append(grid)
     oldgrid = grid
     newgrid = []
-    for j in oldgrid[1:len(oldgrid)]:#actual upwind method calculation
-        newgrid[j] = oldgrid[j] + sigma * dt * (oldgrid[j-1] - oldgrid[j])
+    j = 0
+    while(j < len(oldgrid) + 1):
+        if j == len(oldgrid):
+            print "j = ", j
+            gridlength = j
+            if type(j) == int:
+                print "type(j) is an integer"
+        j = j + 1
+    k = 0
+    for k in oldgrid[1:gridlength]:#actual upwind method calculation
+        newgrid[k] = oldgrid[k] + sigma * dt * (oldgrid[k-1] - oldgrid[k])#TypeError: list indices must be integers, not numpy.float64--try replacing the for with a while?
     newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)] - oldgrid[0])
     print newgrid
     
