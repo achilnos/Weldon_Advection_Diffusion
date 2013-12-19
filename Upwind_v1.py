@@ -3,9 +3,11 @@ import math
 
 GRIDS = []
 
+#for terminal:
 #cd ~/Documents/Python/Weldon_Advection_Diffusion
+#python Upwind_v1.py
 
-#w is the width of the cosine;n is resolution;f is the initial condition
+#more efficent version of grid maker:w is the width of the cosine;n is resolution;f is the initial condition
 def grid_init(n,w,f):
     return np.array([f(1.0*x*w/n+w/(2.0*n)) for x in range(0, n)])
     
@@ -14,28 +16,22 @@ def grid_init(n,w,f):
 def time_loop(initsize, h, hh, timemax, a, sigma):
     t = 0
     dt = sigma * h / a
-    print "time_loop dt = ", dt
-    print "time_loop h = ", h
-    print "time_loop a = ", a
-    print "time_loop sigma = ", sigma
     nmax = timemax / dt
-    #print "nmax =", nmax
-    #print "dt =", dt
     if nmax * dt < timemax:
         nmax = nmax + 1
-    while(t < nmax):#this loop continues indefinitly
+    while(t < nmax):
         if t + dt > timemax:
             dt = timemax - t
             if dt == 0:
                 break#this could be the place to call the data comparison function
-        space_loop(initsize, h, hh)
+        space_loop(initsize, h, hh, sigma, dt)
         print "innerloop dt = ", dt
         t = t + dt#the problem is dt = 0 here
         #print "t = ", t
     #print "t =", t
         #actual upwind calculation next line
 
-def space_loop(initsize, h, hh):
+def space_loop(initsize, h, hh, sigma, dt):
     print "space loop initsize = " + str(initsize)
     grid = np.zeros(initsize)#having this vector be bigger than m allow convient boundary condition calculations
     i = 0
@@ -47,6 +43,11 @@ def space_loop(initsize, h, hh):
     print grid
     GRIDS.append(grid)
     oldgrid = grid
+    newgrid = []
+    for j in oldgrid[1:len(oldgrid)]:#actual upwind method calculation
+        newgrid[j] = oldgrid[j] + sigma * dt * (oldgrid[j-1] - oldgrid[j])
+    newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)] - oldgrid[0])
+    print newgrid
     
 def grid_maker(initsize, n, timemax, a, sigma):
     i = 0
