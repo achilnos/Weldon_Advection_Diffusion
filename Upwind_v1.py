@@ -40,19 +40,11 @@ def space_loop(initsize, h, hh, sigma, dt):
     print grid
     GRIDS.append(grid)
     oldgrid = grid
-    newgrid = []
+    newgrid = np.zeros((1, len(oldgrid)))
     j = 0
-    while(j < len(oldgrid) + 1):
-        if j == len(oldgrid):
-            print "j = ", j
-            gridlength = j
-            if type(j) == int:
-                print "type(j) is an integer"
-        j = j + 1
-    k = 0
-    for k in oldgrid[1:gridlength]:#actual upwind method calculation
-        newgrid[k] = oldgrid[k] + sigma * dt * (oldgrid[k-1] - oldgrid[k])#TypeError: list indices must be integers, not numpy.float64--try replacing the for with a while?
-    newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)] - oldgrid[0])
+    for j in oldgrid[1:len(oldgrid)-1]:#actual upwind method calculation
+        newgrid[j] = oldgrid[j] + sigma * dt * (oldgrid[j-1] - oldgrid[j])
+    newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)-1] - oldgrid[0])
     print newgrid
     
 def grid_maker(initsize, n, timemax, a, sigma):
