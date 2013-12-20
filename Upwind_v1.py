@@ -13,39 +13,51 @@ def grid_init(n,w,f):
     
 #print grid_init(100,1,lambda x: math.cos(2*math.pi*x))
 
+def result(newgrid):
+    print "the state of the system at the final timestep is: ", newgrid
+
 def time_loop(initsize, h, hh, timemax, a, sigma):
     t = 0
     dt = sigma * h / a
     nmax = timemax / dt
+    oldgrid = np.zeros(initsize)#having this vector be bigger than m allow convient boundary condition calculations
+    newgrid = np.zeros(initsize)
+    set_initial(initsize, h, hh, sigma, dt, oldgrid, newgrid)
     if nmax * dt < timemax:
         nmax = nmax + 1
     while(t < nmax):
         if t + dt > timemax:
             dt = timemax - t
             if dt == 0:
+                result(oldgrid)
                 break
-        space_loop(initsize, h, hh, sigma, dt)
-        print "innerloop dt = ", dt
+        space_loop(initsize, h, hh, sigma, dt, oldgrid, newgrid)
+        oldgrid = newgrid
+        print "oldgrid = ", oldgrid
+        print "newgrid = ", newgrid
         t = t + dt
 
-def space_loop(initsize, h, hh, sigma, dt):
-    print "space loop initsize = " + str(initsize)
-    grid = np.zeros(initsize)#having this vector be bigger than m allow convient boundary condition calculations
+def set_initial(initsize, h, hh, sigma, dt, oldgrid, newgrid):
+    #print "space loop initsize = " + str(initsize)
     i = 0
     while(i < initsize):
         x = i * h - hh
         f = lambda x: math.cos(2*math.pi*x)
-        grid[i] = f(x)
+        oldgrid[i] = f(x)
         i = i + 1
-    print grid
-    GRIDS.append(grid)
-    oldgrid = grid
-    newgrid = np.zeros((1, len(oldgrid)))
+    
+def space_loop(initsize, h, hh, sigma, dt, oldgrid, newgrid):#actual upwind method calculation
+    GRIDS.append(oldgrid)
     j = 0
-    for j in oldgrid[1:len(oldgrid)-1]:#actual upwind method calculation
-        newgrid[j] = oldgrid[j] + sigma * dt * (oldgrid[j-1] - oldgrid[j])
-    newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)-1] - oldgrid[0])
-    print newgrid
+    while(j < len(oldgrid) - 1):
+        j = j + 1
+#    for j in oldgrid[1:len(oldgrid)-1]:#the range set up wrong, causing no count
+#        #this is where the problem is: j is not counting!
+        print "newgrid", j, " = ", newgrid[j]
+        print "oldgrid", j, " = ", oldgrid[j]
+        newgrid[j] = oldgrid[j] + sigma * dt * (oldgrid[j-1] - oldgrid[j])#this is just adding zeros!
+    newgrid[0] = oldgrid[0] + sigma * dt * (oldgrid[len(oldgrid)-1] - oldgrid[0])#this works
+    print newgrid#this result is not evolving!
     
 def grid_maker(initsize, n, timemax, a, sigma):
     i = 0
